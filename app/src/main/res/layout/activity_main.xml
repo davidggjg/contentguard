@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    פריסת המסך הראשי של ContentGuard.
-    RTL מוגדר אוטומטית כי android:supportsRtl="true" במניפסט.
--->
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#0F172A"
@@ -17,7 +14,6 @@
         android:padding="24dp"
         android:gravity="center_horizontal">
 
-        <!-- כותרת -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -35,7 +31,6 @@
             android:textColor="#94A3B8"
             android:layout_marginTop="4dp" />
 
-        <!-- כרטיס סטטוס -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -52,7 +47,6 @@
                 android:textColor="#64748B"
                 android:textAllCaps="true" />
 
-            <!-- סטטוס הגנה ראשי -->
             <TextView
                 android:id="@+id/tvStatus"
                 android:layout_width="wrap_content"
@@ -63,7 +57,6 @@
                 android:textColor="#F8FAFC"
                 android:layout_marginTop="8dp" />
 
-            <!-- טיימר עיכוב (מוסתר כברירת מחדל) -->
             <TextView
                 android:id="@+id/tvDelayTimer"
                 android:layout_width="wrap_content"
@@ -74,44 +67,40 @@
 
         </LinearLayout>
 
-        <!-- כפתור VPN ראשי -->
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnToggleVpn"
             android:layout_width="match_parent"
             android:layout_height="64dp"
             android:text="הפעל הגנה"
             android:textSize="18sp"
             android:textColor="#FFFFFF"
-            android:backgroundTint="#2563EB"
-            android:layout_marginTop="24dp"
-            android:cornerRadius="12dp" />
+            app:backgroundTint="#2563EB"
+            app:cornerRadius="12dp"
+            android:layout_marginTop="24dp" />
 
-        <!-- כפתור הגנת הסרה -->
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAdminProtection"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:text="הפעל הגנת הסרה"
             android:textSize="16sp"
             android:textColor="#FFFFFF"
-            android:backgroundTint="#7C3AED"
-            android:layout_marginTop="12dp"
-            android:cornerRadius="12dp" />
+            app:backgroundTint="#7C3AED"
+            app:cornerRadius="12dp"
+            android:layout_marginTop="12dp" />
 
-        <!-- כפתור ביטול בקשה (מוסתר עד שיש בקשה פעילה) -->
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCancelRequest"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:text="בטל בקשת ביטול"
             android:textSize="14sp"
             android:textColor="#FFFFFF"
-            android:backgroundTint="#DC2626"
+            app:backgroundTint="#DC2626"
+            app:cornerRadius="12dp"
             android:layout_marginTop="12dp"
-            android:cornerRadius="12dp"
             android:visibility="gone" />
 
-        <!-- הסבר קצר -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
