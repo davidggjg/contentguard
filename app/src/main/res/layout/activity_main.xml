@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    פריסת המסך הראשי של ContentGuard.
+    RTL מוגדר אוטומטית כי android:supportsRtl="true" במניפסט.
+-->
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0F172A"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal">
+
+        <!-- כותרת -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🛡️ ContentGuard"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:textColor="#F8FAFC"
+            android:layout_marginTop="32dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="הגנת רשת אישית"
+            android:textSize="16sp"
+            android:textColor="#94A3B8"
+            android:layout_marginTop="4dp" />
+
+        <!-- כרטיס סטטוס -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_background"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:layout_marginTop="32dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="מצב נוכחי"
+                android:textSize="12sp"
+                android:textColor="#64748B"
+                android:textAllCaps="true" />
+
+            <!-- סטטוס הגנה ראשי -->
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚠️ הגנה לא פעילה"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#F8FAFC"
+                android:layout_marginTop="8dp" />
+
+            <!-- טיימר עיכוב (מוסתר כברירת מחדל) -->
+            <TextView
+                android:id="@+id/tvDelayTimer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="#F59E0B"
+                android:layout_marginTop="8dp" />
+
+        </LinearLayout>
+
+        <!-- כפתור VPN ראשי -->
+        <Button
+            android:id="@+id/btnToggleVpn"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:text="הפעל הגנה"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#2563EB"
+            android:layout_marginTop="24dp"
+            android:cornerRadius="12dp" />
+
+        <!-- כפתור הגנת הסרה -->
+        <Button
+            android:id="@+id/btnAdminProtection"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="הפעל הגנת הסרה"
+            android:textSize="16sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#7C3AED"
+            android:layout_marginTop="12dp"
+            android:cornerRadius="12dp" />
+
+        <!-- כפתור ביטול בקשה (מוסתר עד שיש בקשה פעילה) -->
+        <Button
+            android:id="@+id/btnCancelRequest"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="בטל בקשת ביטול"
+            android:textSize="14sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#DC2626"
+            android:layout_marginTop="12dp"
+            android:cornerRadius="12dp"
+            android:visibility="gone" />
+
+        <!-- הסבר קצר -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_background"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_marginTop="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ℹ️ איך זה עובד"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#F8FAFC" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="• VPN מקומי מסנן תעבורת רשת\n• DNS של CleanBrowsing חוסם תוכן\n• הגנת Admin מקשה על הסרה\n• ביטול דורש המתנה של 48 שעות"
+                android:textSize="13sp"
+                android:textColor="#94A3B8"
+                android:layout_marginTop="8dp"
+                android:lineSpacingExtra="4dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

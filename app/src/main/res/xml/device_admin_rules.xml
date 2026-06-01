@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    הגדרת יכולות מנהל המכשיר.
+    כרגע לא מגדירים יכולות ספציפיות (כמו ניגוב מכשיר) –
+    רק הרישום עצמו מספיק כדי להגן מפני הסרה קלה.
+
+    אם בעתיד תרצה להוסיף יכולות (כמו אילוץ סיסמה):
+    <uses-policies>
+        <force-lock />
+        <reset-password />
+    </uses-policies>
+-->
+<device-admin xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-policies />
+</device-admin>
