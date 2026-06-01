@@ -12,38 +12,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # שלב 1: הורדת הקוד מהריפו
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # שלב 2: הגדרת Java 17 (נדרש ל-Kotlin ול-Android Gradle)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'   # Eclipse Temurin – מומלץ יותר מ-adopt
+          distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'           # שמירת Gradle cache להאצת builds עתידיים
+          cache: 'gradle'
 
-      # שלב 3: הרשאות הרצה ל-Gradle wrapper
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
 
-      # שלב 4: Lint – בדיקת שגיאות קוד בסיסיות
+      - name: Make gradlew executable
+        run: |
+          if [ ! -f gradlew ]; then
+            gradle wrapper --gradle-version 8.9
+          fi
+          chmod +x gradlew
+
       - name: Run Lint
         run: ./gradlew lint
 
-      # שלב 5: Unit Tests
       - name: Run Unit Tests
         run: ./gradlew testDebugUnitTest
 
-      # שלב 6: בניית APK לדיבאג
       - name: Build Debug APK
         run: ./gradlew assembleDebug
 
-      # שלב 7: שמירת ה-APK כ-Artifact להורדה
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-${{ github.sha }}
           path: app/build/outputs/apk/debug/*.apk
-          retention-days: 7   # שמור 7 ימים בלבד (חוסך storage)
+          retention-days: 7
