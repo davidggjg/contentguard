@@ -26,11 +26,11 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Make gradlew executable (אם קיים)
+      - name: Make gradlew executable
         run: test -f gradlew && chmod +x gradlew || true
 
       - name: Run Lint
-        run: gradle lint
+        run: gradle lint --stacktrace
 
       - name: Run Unit Tests
         run: gradle testDebugUnitTest
