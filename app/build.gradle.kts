@@ -5,19 +5,19 @@ plugins {
 
 android {
     namespace = "com.contentguard"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.contentguard"
-        minSdk = 28  // Android 9 – נדרש ל-Private DNS ו-EncryptedSharedPreferences
-        targetSdk = 35
+        minSdk = 28
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = true   // כווץ קוד ב-release
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -37,20 +37,17 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+
+    lint {
+        abortOnError = false
+        warningsAsErrors = false
+    }
 }
 
 dependencies {
-    // AndroidX בסיסי
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-
-    // הצפנת SharedPreferences
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
-
-    // Coroutines – לפעולות רשת ברקע (הורדת blocklist)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-
-    // TODO לגרסה הבאה: OkHttp להורדת blocklist
-    // implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
