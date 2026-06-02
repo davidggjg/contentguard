@@ -5,14 +5,10 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
-/**
- * מנהל התקשורת עם השרת.
- * שולח קוד הפעלה → מקבל הגדרות חסימה.
- */
 object ApiManager {
 
     private const val TAG = "ApiManager"
-    private const val BASE_URL = "https://contentguard-web.vercel.app/api"
+    private const val BASE_URL = "https://contentguard-web-vxiw.vercel.app/api"
 
     data class DeviceSettings(
         val deviceId: String,
@@ -21,10 +17,6 @@ object ApiManager {
         val blockLevel: String
     )
 
-    /**
-     * מפעיל מכשיר לפי קוד הפעלה.
-     * קורא לזה פעם אחת בהתקנה.
-     */
     fun activate(activationCode: String): DeviceSettings? {
         return try {
             val url = URL("$BASE_URL/devices")
@@ -40,19 +32,16 @@ object ApiManager {
                 val response = conn.inputStream.bufferedReader().readText()
                 parseSettings(response)
             } else {
-                Log.e(TAG, "שגיאת שרת: ${conn.responseCode}")
+                val error = conn.errorStream?.bufferedReader()?.readText()
+                Log.e(TAG, "שגיאת שרת: ${conn.responseCode} – $error")
                 null
             }
         } catch (e: Exception) {
-            Log.e(TAG, "שגיאת חיבור: ${e.message}")
+            Log.e(TAG, "שגיאת חיבור: ${e.message}", e)
             null
         }
     }
 
-    /**
-     * מושך הגדרות עדכניות מהשרת.
-     * קורא לזה כל 30 דקות ברקע.
-     */
     fun fetchSettings(deviceId: String): DeviceSettings? {
         return try {
             val url = URL("$BASE_URL/devices?device_id=$deviceId")
