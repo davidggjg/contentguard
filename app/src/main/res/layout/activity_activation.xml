@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp"
+    android:background="#0F172A">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🛡️"
+        android:textSize="64sp"
+        android:gravity="center"
+        android:layout_width="match_parent"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ברוך הבא ל-ContentGuard"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="#F8FAFC"
+        android:gravity="center"
+        android:layout_marginTop="16dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="הזן את קוד ההפעלה שקיבלת מהאתר"
+        android:textSize="14sp"
+        android:textColor="#94A3B8"
+        android:gravity="center"
+        android:layout_marginTop="8dp"/>
+
+    <EditText
+        android:id="@+id/etActivationCode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="קוד הפעלה (6 תווים)"
+        android:textSize="24sp"
+        android:gravity="center"
+        android:inputType="textCapCharacters"
+        android:maxLength="6"
+        android:background="@drawable/card_background"
+        android:textColor="#F8FAFC"
+        android:textColorHint="#64748B"
+        android:padding="16dp"
+        android:layout_marginTop="32dp"
+        android:fontFamily="monospace"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnActivate"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="הפעל"
+        android:textSize="18sp"
+        android:textColor="#FFFFFF"
+        app:backgroundTint="#2563EB"
+        app:cornerRadius="12dp"
+        android:layout_marginTop="16dp"
+        xmlns:app="http://schemas.android.com/apk/res-auto"/>
+
+    <TextView
+        android:id="@+id/tvActivationStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="#22C55E"
+        android:gravity="center"
+        android:layout_marginTop="16dp"/>
+
+</LinearLayout>
