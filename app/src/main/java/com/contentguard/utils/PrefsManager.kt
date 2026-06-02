@@ -2,97 +2,55 @@ package com.contentguard.utils
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
 
-/**
- * PrefsManager – ניהול הגדרות האפליקציה.
- *
- * משתמשים ב-EncryptedSharedPreferences כדי שלא יהיה אפשר
- * לערוך את ההגדרות ישירות בקבצים על המכשיר.
- */
 class PrefsManager(context: Context) {
 
     companion object {
         private const val PREFS_FILE = "contentguard_prefs"
         private const val KEY_VPN_ENABLED = "vpn_enabled"
         private const val KEY_DISABLE_REQUESTED_TIME = "disable_requested_time"
-        private const val KEY_PROTECTION_PIN_HASH = "protection_pin_hash"
-
-        // 48 שעות במילישניות
+        private const val KEY_DEVICE_ID = "device_id"
+        private const val KEY_ACTIVATION_CODE = "activation_code"
+        private const val KEY_BLOCKED_DOMAINS = "blocked_domains"
+        private const val KEY_BLOCK_LEVEL = "block_level"
+        private const val KEY_ACTIVATED = "activated"
         const val DELAY_MILLIS = 48L * 60 * 60 * 1000
     }
 
-    // הגדרות מוצפנות – מאובטח יותר מ-SharedPreferences רגיל
-    private val prefs: SharedPreferences by lazy {
-        try {
-            val masterKey = MasterKey.Builder(context)
-                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                .build()
+    private val prefs: SharedPreferences =
+        context.getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
 
-            EncryptedSharedPreferences.create(
-                context,
-                PREFS_FILE,
-                masterKey,
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-            )
-        } catch (e: Exception) {
-            // fallback לשימוש רגיל אם EncryptedSharedPreferences נכשל
-            context.getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
-        }
-    }
+    // VPN
+    fun isVpnEnabled() = prefs.getBoolean(KEY_VPN_ENABLED, false)
+    fun setVpnEnabled(enabled: Boolean) = prefs.edit().putBoolean(KEY_VPN_ENABLED, enabled).apply()
 
-    // ─── VPN ────────────────────────────────────────────────────────────────
-
-    fun isVpnEnabled(): Boolean = prefs.getBoolean(KEY_VPN_ENABLED, false)
-
-    fun setVpnEnabled(enabled: Boolean) {
-        prefs.edit().putBoolean(KEY_VPN_ENABLED, enabled).apply()
-    }
-
-    // ─── מנגנון עיכוב הסרה ──────────────────────────────────────────────────
-
-    /**
-     * שומר מתי הוגשה בקשת ביטול הגנה.
-     * @param time זמן ב-milliseconds, או 0 לאיפוס
-     */
-    fun setDisableRequestedTime(time: Long) {
-        prefs.edit().putLong(KEY_DISABLE_REQUESTED_TIME, time).apply()
-    }
-
-    fun getDisableRequestedTime(): Long =
-        prefs.getLong(KEY_DISABLE_REQUESTED_TIME, 0L)
-
-    /**
-     * האם חלפו 48 שעות מבקשת הביטול?
-     */
+    // עיכוב הסרה
+    fun setDisableRequestedTime(time: Long) = prefs.edit().putLong(KEY_DISABLE_REQUESTED_TIME, time).apply()
+    fun getDisableRequestedTime() = prefs.getLong(KEY_DISABLE_REQUESTED_TIME, 0L)
     fun isDelayPassed(): Boolean {
-        val requestTime = getDisableRequestedTime()
-        if (requestTime == 0L) return false
-        return System.currentTimeMillis() - requestTime >= DELAY_MILLIS
+        val t = getDisableRequestedTime()
+        return t > 0 && System.currentTimeMillis() - t >= DELAY_MILLIS
     }
-
-    /**
-     * כמה זמן נותר עד שהביטול יכנס לתוקף (במילישניות).
-     */
     fun getRemainingDelayMillis(): Long {
-        val requestTime = getDisableRequestedTime()
-        if (requestTime == 0L) return DELAY_MILLIS
-        val elapsed = System.currentTimeMillis() - requestTime
-        return maxOf(0L, DELAY_MILLIS - elapsed)
+        val t = getDisableRequestedTime()
+        return if (t == 0L) DELAY_MILLIS else maxOf(0L, DELAY_MILLIS - (System.currentTimeMillis() - t))
     }
 
-    // ─── סיסמת הגנה ─────────────────────────────────────────────────────────
+    // חשבון
+    fun isActivated() = prefs.getBoolean(KEY_ACTIVATED, false)
+    fun setActivated(v: Boolean) = prefs.edit().putBoolean(KEY_ACTIVATED, v).apply()
+    fun getDeviceId() = prefs.getString(KEY_DEVICE_ID, null)
+    fun setDeviceId(id: String) = prefs.edit().putString(KEY_DEVICE_ID, id).apply()
+    fun getActivationCode() = prefs.getString(KEY_ACTIVATION_CODE, null)
+    fun setActivationCode(code: String) = prefs.edit().putString(KEY_ACTIVATION_CODE, code).apply()
 
-    /**
-     * שומר hash של הסיסמה (לא הסיסמה עצמה!).
-     */
-    fun setPinHash(pinHash: String) {
-        prefs.edit().putString(KEY_PROTECTION_PIN_HASH, pinHash).apply()
+    // הגדרות חסימה
+    fun getBlockedDomains(): List<String> {
+        val raw = prefs.getString(KEY_BLOCKED_DOMAINS, "") ?: ""
+        return if (raw.isEmpty()) emptyList() else raw.split(",")
     }
-
-    fun getPinHash(): String? = prefs.getString(KEY_PROTECTION_PIN_HASH, null)
-
-    fun hasPin(): Boolean = getPinHash() != null
+    fun setBlockedDomains(domains: List<String>) =
+        prefs.edit().putString(KEY_BLOCKED_DOMAINS, domains.joinToString(",")).apply()
+    fun getBlockLevel() = prefs.getString(KEY_BLOCK_LEVEL, "medium") ?: "medium"
+    fun setBlockLevel(level: String) = prefs.edit().putString(KEY_BLOCK_LEVEL, level).apply()
 }
