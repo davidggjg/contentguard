@@ -15,14 +15,32 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/**
- * מסך הפעלה – מוצג פעם אחת בלבד.
- * המשתמש מזין את קוד ההפעלה שקיבל מהאתר.
- */
 class ActivationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val prefs = PrefsManager(this)
+
+        // אם כבר מופעל – עבור ישירות למסך הראשי
+        if (prefs.isActivated()) {
+            // משך הגדרות עדכניות ברקע
+            val deviceId = prefs.getDeviceId()
+            if (deviceId != null) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val settings = ApiManager.fetchSettings(deviceId)
+                    if (settings != null) {
+                        prefs.setBlockedDomains(settings.blockedDomains)
+                        prefs.setBlockedApps(settings.blockedApps)
+                        prefs.setBlockLevel(settings.blockLevel)
+                    }
+                }
+            }
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+            return
+        }
+
         setContentView(R.layout.activity_activation)
 
         val etCode = findViewById<EditText>(R.id.etActivationCode)
@@ -43,11 +61,10 @@ class ActivationActivity : AppCompatActivity() {
                 val settings = ApiManager.activate(code)
                 withContext(Dispatchers.Main) {
                     if (settings != null) {
-                        // שמור את פרטי המכשיר
-                        val prefs = PrefsManager(this@ActivationActivity)
                         prefs.setDeviceId(settings.deviceId)
                         prefs.setActivationCode(code)
                         prefs.setBlockedDomains(settings.blockedDomains)
+                        prefs.setBlockedApps(settings.blockedApps)
                         prefs.setBlockLevel(settings.blockLevel)
                         prefs.setActivated(true)
 
@@ -58,7 +75,6 @@ class ActivationActivity : AppCompatActivity() {
                             Toast.LENGTH_LONG
                         ).show()
 
-                        // עבור למסך הראשי
                         startActivity(Intent(this@ActivationActivity, MainActivity::class.java))
                         finish()
                     } else {
