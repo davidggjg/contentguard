@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp"
+    android:background="#0F172A">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🚫"
+        android:textSize="72sp"
+        android:gravity="center"
+        android:layout_width="match_parent" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="גישה חסומה"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#F8FAFC"
+        android:gravity="center"
+        android:layout_marginTop="16dp" />
+
+    <TextView
+        android:id="@+id/tvBlockedAppName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:textColor="#94A3B8"
+        android:gravity="center"
+        android:layout_marginTop="8dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="אפליקציה זו חסומה על ידי ContentGuard"
+        android:textSize="14sp"
+        android:textColor="#64748B"
+        android:gravity="center"
+        android:layout_marginTop="8dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnGoHome"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="חזור למסך הבית"
+        android:textSize="16sp"
+        android:textColor="#FFFFFF"
+        app:backgroundTint="#2563EB"
+        app:cornerRadius="12dp"
+        android:layout_marginTop="40dp" />
+
+</LinearLayout>
