@@ -20,8 +20,13 @@ import androidx.work.WorkManager
 import com.contentguard.R
 import com.contentguard.receiver.AdminReceiver
 import com.contentguard.service.BlockerVpnService
+import com.contentguard.utils.ApiManager
+import com.contentguard.utils.AppScanner
 import com.contentguard.utils.HeartbeatWorker
 import com.contentguard.utils.PrefsManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
@@ -59,6 +64,9 @@ class MainActivity : AppCompatActivity() {
         setupClickListeners()
         updateUI()
         startHeartbeat()
+
+        // סריקת אפליקציות מיידית בכל פתיחה
+        syncAppsNow()
     }
 
     override fun onResume() {
@@ -90,14 +98,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * סורק ושולח את רשימת האפליקציות לשרת מיד בפתיחה.
+     */
+    private fun syncAppsNow() {
+        val deviceId = prefs.getDeviceId() ?: return
+        CoroutineScope(Dispatchers.IO).launch {
+            val apps = AppScanner.getInstalledApps(applicationContext)
+            ApiManager.sendInstalledApps(deviceId, apps)
+            ApiManager.sendHeartbeat(deviceId)
+        }
+    }
+
     private fun startHeartbeat() {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
 
-        val request = PeriodicWorkRequestBuilder<HeartbeatWorker>(
-            15, TimeUnit.MINUTES // מינימום ב-WorkManager הוא 15 דקות
-        )
+        val request = PeriodicWorkRequestBuilder<HeartbeatWorker>(15, TimeUnit.MINUTES)
             .setConstraints(constraints)
             .build()
 
