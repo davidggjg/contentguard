@@ -28,6 +28,14 @@
             android:name=".ui.MainActivity"
             android:exported="false" />
 
+        <!-- מסך חסימה – מוצג מעל אפליקציות חסומות -->
+        <activity
+            android:name=".ui.BlockedActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ContentGuard"
+            android:excludeFromRecents="true"
+            android:taskAffinity="com.contentguard.blocked" />
+
         <service
             android:name=".service.BlockerVpnService"
             android:permission="android.permission.BIND_VPN_SERVICE"
