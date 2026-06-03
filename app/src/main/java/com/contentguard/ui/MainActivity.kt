@@ -112,6 +112,15 @@ class MainActivity : AppCompatActivity() {
     private fun syncAppsNow() {
         val deviceId = prefs.getDeviceId() ?: return
         CoroutineScope(Dispatchers.IO).launch {
+            // מושך הגדרות עדכניות – כולל אפליקציות חסומות
+            val settings = ApiManager.fetchSettings(deviceId)
+            if (settings != null) {
+                prefs.setBlockedDomains(settings.blockedDomains)
+                prefs.setBlockedApps(settings.blockedApps)
+                prefs.setBlockLevel(settings.blockLevel)
+            }
+
+            // שולח רשימת אפליקציות ו-heartbeat
             val apps = AppScanner.getInstalledApps(applicationContext)
             ApiManager.sendInstalledApps(deviceId, apps)
             ApiManager.sendHeartbeat(deviceId)
