@@ -12,53 +12,36 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.work.*
 import com.contentguard.R
 import com.contentguard.receiver.AdminReceiver
 import com.contentguard.service.BlockerVpnService
+import com.contentguard.utils.HeartbeatWorker
 import com.contentguard.utils.PrefsManager
 import java.util.concurrent.TimeUnit
 
-/**
- * MainActivity – המסך הראשי של ContentGuard.
- *
- * מה יש כאן:
- * 1. כפתור להפעלת/כיבוי ה-VPN
- * 2. כפתור לאישור הרשאות Device Admin
- * 3. תצוגת מצב ההגנה
- * 4. טיימר לביטול (אם הוגשה בקשה)
- */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var prefs: PrefsManager
     private lateinit var devicePolicyManager: DevicePolicyManager
     private lateinit var adminComponentName: ComponentName
 
-    // Views
     private lateinit var tvStatus: TextView
     private lateinit var tvDelayTimer: TextView
     private lateinit var btnToggleVpn: Button
     private lateinit var btnAdminProtection: Button
     private lateinit var btnCancelRequest: Button
 
-    // Activity Result Launchers (הדרך המודרנית לבקש הרשאות)
     private val vpnPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == RESULT_OK) {
-            startVpnService()
-        } else {
-            showToast("הרשאת VPN נדחתה")
-        }
+        if (result.resultCode == RESULT_OK) startVpnService()
+        else showToast("הרשאת VPN נדחתה")
     }
 
     private val adminPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == RESULT_OK) {
-            showToast("✅ הגנת הסרה הופעלה!")
-        }
-        updateUI()
-    }
+    ) { updateUI() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,11 +54,12 @@ class MainActivity : AppCompatActivity() {
         initViews()
         setupClickListeners()
         updateUI()
+        startHeartbeat()
     }
 
     override fun onResume() {
         super.onResume()
-        updateUI() // מעדכן את המצב כל פעם שחוזרים למסך
+        updateUI()
     }
 
     private fun initViews() {
@@ -87,26 +71,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
-
-        // הפעלה/כיבוי VPN
         btnToggleVpn.setOnClickListener {
-            if (prefs.isVpnEnabled()) {
-                showDisableConfirmation()
-            } else {
-                requestVpnPermission()
-            }
+            if (prefs.isVpnEnabled()) showDisableConfirmation()
+            else requestVpnPermission()
         }
-
-        // הפעלת הגנת Admin
         btnAdminProtection.setOnClickListener {
-            if (isAdminActive()) {
-                showToast("הגנה כבר מופעלת ✅")
-            } else {
-                requestAdminPermission()
-            }
+            if (!isAdminActive()) requestAdminPermission()
+            else showToast("הגנה כבר מופעלת ✅")
         }
-
-        // ביטול בקשת הסרה (אם הוגשה בטעות)
         btnCancelRequest.setOnClickListener {
             prefs.setDisableRequestedTime(0L)
             showToast("בקשת הביטול בוטלה ✅")
@@ -114,76 +86,66 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ─── VPN ────────────────────────────────────────────────────────────────
+    // מפעיל HeartbeatWorker שרץ כל 5 דקות ברקע
+    private fun startHeartbeat() {
+        val request = PeriodicWorkRequestBuilder<HeartbeatWorker>(5, TimeUnit.MINUTES)
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
+            )
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "heartbeat",
+            ExistingPeriodicWorkPolicy.KEEP,
+            request
+        )
+    }
 
     private fun requestVpnPermission() {
         val intent = VpnService.prepare(this)
-        if (intent != null) {
-            // צריך לבקש הרשאה מהמשתמש
-            vpnPermissionLauncher.launch(intent)
-        } else {
-            // הרשאה כבר קיימת
-            startVpnService()
-        }
+        if (intent != null) vpnPermissionLauncher.launch(intent)
+        else startVpnService()
     }
 
     private fun startVpnService() {
-        val intent = Intent(this, BlockerVpnService::class.java)
-        startForegroundService(intent)
+        startForegroundService(Intent(this, BlockerVpnService::class.java))
         prefs.setVpnEnabled(true)
         updateUI()
         showToast("🛡️ הגנה הופעלה!")
     }
 
     private fun stopVpnService() {
-        val intent = Intent(this, BlockerVpnService::class.java)
-        stopService(intent)
+        stopService(Intent(this, BlockerVpnService::class.java))
         prefs.setVpnEnabled(false)
         updateUI()
     }
 
-    /**
-     * מציג דיאלוג אישור לפני כיבוי – עוד שכבת הגנה מפני דחף רגעי.
-     */
     private fun showDisableConfirmation() {
         AlertDialog.Builder(this)
             .setTitle("לכבות את ההגנה?")
-            .setMessage(
-                "האם אתה בטוח שתרצה לכבות את הגנת הרשת?\n\n" +
-                "💡 טיפ: אם יש משהו שתרצה לגשת אליו – " +
-                "אולי כדאי להמתין כמה דקות ולראות אם הדחף עובר."
-            )
+            .setMessage("האם אתה בטוח?")
             .setPositiveButton("כן, כבה") { _, _ -> stopVpnService() }
             .setNegativeButton("ביטול", null)
             .show()
     }
 
-    // ─── Device Admin ────────────────────────────────────────────────────────
-
-    private fun isAdminActive(): Boolean {
-        return devicePolicyManager.isAdminActive(adminComponentName)
-    }
+    private fun isAdminActive() = devicePolicyManager.isAdminActive(adminComponentName)
 
     private fun requestAdminPermission() {
         val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
             putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponentName)
-            putExtra(
-                DevicePolicyManager.EXTRA_ADD_EXPLANATION,
-                "הגנה זו מונעת מחיקה מקרית של ContentGuard. " +
-                "כדי להסיר, יש לבטל הרשאות אלו תחילה."
-            )
+            putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "הגנה מפני הסרה")
         }
         adminPermissionLauncher.launch(intent)
     }
-
-    // ─── UI Update ───────────────────────────────────────────────────────────
 
     private fun updateUI() {
         val vpnActive = prefs.isVpnEnabled()
         val adminActive = isAdminActive()
         val pendingRequest = prefs.getDisableRequestedTime() > 0
 
-        // סטטוס כללי
         tvStatus.text = when {
             vpnActive && adminActive -> "🛡️ הגנה מלאה פעילה"
             vpnActive -> "⚡ VPN פעיל (ללא הגנת הסרה)"
@@ -191,18 +153,14 @@ class MainActivity : AppCompatActivity() {
             else -> "⚠️ הגנה לא פעילה"
         }
 
-        // כפתור VPN
         btnToggleVpn.text = if (vpnActive) "כבה הגנה" else "הפעל הגנה"
-
-        // כפתור Admin
         btnAdminProtection.text = if (adminActive) "✅ מוגן מהסרה" else "הפעל הגנת הסרה"
         btnAdminProtection.isEnabled = !adminActive
 
-        // טיימר ביטול
         if (pendingRequest) {
             val remaining = prefs.getRemainingDelayMillis()
-            val hours = TimeUnit.MILLISECONDS.toHours(remaining)
-            val minutes = TimeUnit.MILLISECONDS.toMinutes(remaining) % 60
+            val hours = remaining / 3600000
+            val minutes = (remaining % 3600000) / 60000
             tvDelayTimer.text = "⏳ ביטול בעוד: ${hours}ש׳ ${minutes}ד׳"
             btnCancelRequest.visibility = android.view.View.VISIBLE
         } else {
@@ -211,7 +169,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showToast(message: String) {
+    private fun showToast(message: String) =
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-    }
 }
