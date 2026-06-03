@@ -15,22 +15,25 @@
         android:gravity="center_horizontal">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="🛡️ ContentGuard"
             android:textSize="32sp"
             android:textStyle="bold"
             android:textColor="#F8FAFC"
+            android:gravity="center"
             android:layout_marginTop="32dp" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="הגנת רשת אישית"
             android:textSize="16sp"
             android:textColor="#94A3B8"
+            android:gravity="center"
             android:layout_marginTop="4dp" />
 
+        <!-- כרטיס סטטוס -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -67,6 +70,7 @@
 
         </LinearLayout>
 
+        <!-- כפתור VPN -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnToggleVpn"
             android:layout_width="match_parent"
@@ -78,6 +82,7 @@
             app:cornerRadius="12dp"
             android:layout_marginTop="24dp" />
 
+        <!-- כפתור Admin -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAdminProtection"
             android:layout_width="match_parent"
@@ -89,6 +94,19 @@
             app:cornerRadius="12dp"
             android:layout_marginTop="12dp" />
 
+        <!-- כפתור Accessibility – חסימת אפליקציות -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAccessibility"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="הפעל חסימת אפליקציות"
+            android:textSize="16sp"
+            android:textColor="#FFFFFF"
+            app:backgroundTint="#059669"
+            app:cornerRadius="12dp"
+            android:layout_marginTop="12dp" />
+
+        <!-- כפתור ביטול בקשה -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCancelRequest"
             android:layout_width="match_parent"
@@ -101,6 +119,7 @@
             android:layout_marginTop="12dp"
             android:visibility="gone" />
 
+        <!-- הסבר -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -120,7 +139,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="• VPN מקומי מסנן תעבורת רשת\n• DNS של CleanBrowsing חוסם תוכן\n• הגנת Admin מקשה על הסרה\n• ביטול דורש המתנה של 48 שעות"
+                android:text="• VPN מקומי מסנן תעבורת רשת\n• DNS של CleanBrowsing חוסם תוכן\n• הגנת Admin מקשה על הסרה\n• נגישות חוסמת אפליקציות ספציפיות\n• ביטול דורש המתנה של 48 שעות"
                 android:textSize="13sp"
                 android:textColor="#94A3B8"
                 android:layout_marginTop="8dp"
