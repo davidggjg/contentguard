@@ -12,7 +12,11 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.work.*
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.contentguard.R
 import com.contentguard.receiver.AdminReceiver
 import com.contentguard.service.BlockerVpnService
@@ -86,14 +90,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // מפעיל HeartbeatWorker שרץ כל 5 דקות ברקע
     private fun startHeartbeat() {
-        val request = PeriodicWorkRequestBuilder<HeartbeatWorker>(5, TimeUnit.MINUTES)
-            .setConstraints(
-                Constraints.Builder()
-                    .setRequiredNetworkType(NetworkType.CONNECTED)
-                    .build()
-            )
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val request = PeriodicWorkRequestBuilder<HeartbeatWorker>(
+            15, TimeUnit.MINUTES // מינימום ב-WorkManager הוא 15 דקות
+        )
+            .setConstraints(constraints)
             .build()
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
