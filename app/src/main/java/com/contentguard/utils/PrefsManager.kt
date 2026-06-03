@@ -12,6 +12,7 @@ class PrefsManager(context: Context) {
         private const val KEY_DEVICE_ID = "device_id"
         private const val KEY_ACTIVATION_CODE = "activation_code"
         private const val KEY_BLOCKED_DOMAINS = "blocked_domains"
+        private const val KEY_BLOCKED_APPS = "blocked_apps"
         private const val KEY_BLOCK_LEVEL = "block_level"
         private const val KEY_ACTIVATED = "activated"
         const val DELAY_MILLIS = 48L * 60 * 60 * 1000
@@ -44,13 +45,22 @@ class PrefsManager(context: Context) {
     fun getActivationCode() = prefs.getString(KEY_ACTIVATION_CODE, null)
     fun setActivationCode(code: String) = prefs.edit().putString(KEY_ACTIVATION_CODE, code).apply()
 
-    // הגדרות חסימה
+    // הגדרות חסימה – דומיינים
     fun getBlockedDomains(): List<String> {
         val raw = prefs.getString(KEY_BLOCKED_DOMAINS, "") ?: ""
         return if (raw.isEmpty()) emptyList() else raw.split(",")
     }
     fun setBlockedDomains(domains: List<String>) =
         prefs.edit().putString(KEY_BLOCKED_DOMAINS, domains.joinToString(",")).apply()
+
+    // הגדרות חסימה – אפליקציות
+    fun getBlockedApps(): Set<String> {
+        val raw = prefs.getString(KEY_BLOCKED_APPS, "") ?: ""
+        return if (raw.isEmpty()) emptySet() else raw.split(",").toSet()
+    }
+    fun setBlockedApps(apps: List<String>) =
+        prefs.edit().putString(KEY_BLOCKED_APPS, apps.joinToString(",")).apply()
+
     fun getBlockLevel() = prefs.getString(KEY_BLOCK_LEVEL, "medium") ?: "medium"
     fun setBlockLevel(level: String) = prefs.edit().putString(KEY_BLOCK_LEVEL, level).apply()
 }
