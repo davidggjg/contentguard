@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">ContentGuard</string>
-
-    <!-- מחרוזות למנהל המכשיר – יוצגו בדף אישור ההרשאות -->
     <string name="admin_label">ContentGuard – הגנת הסרה</string>
-    <string name="admin_description">
-        מונע הסרה מהירה של ContentGuard.
-        ביטול דורש כניסה להגדרות מנהל מכשיר וטיימר המתנה.
-        זה בדיוק מה שיגן עליך ברגעים של דחף.
-    </string>
+    <string name="admin_description">מונע הסרה מהירה של ContentGuard. ביטול דורש כניסה להגדרות מנהל מכשיר וטיימר המתנה.</string>
+    <string name="accessibility_description">ContentGuard משתמש בשירות הנגישות כדי לחסום אפליקציות לא רצויות ולמנוע גישה לתוכן פוגעני.</string>
 </resources>
