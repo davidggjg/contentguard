@@ -13,17 +13,21 @@ class HeartbeatWorker(context: Context, params: WorkerParameters) :
         val prefs = PrefsManager(applicationContext)
         val deviceId = prefs.getDeviceId() ?: return@withContext Result.failure()
 
+        // שולח heartbeat
         ApiManager.sendHeartbeat(deviceId)
 
+        // מושך הגדרות עדכניות – כולל אפליקציות חסומות
         val settings = ApiManager.fetchSettings(deviceId)
         if (settings != null) {
             prefs.setBlockedDomains(settings.blockedDomains)
             prefs.setBlockLevel(settings.blockLevel)
+            prefs.setBlockedApps(settings.blockedApps) // ← חדש!
         }
 
+        // שולח רשימת אפליקציות מותקנות
         val apps = AppScanner.getInstalledApps(applicationContext)
         ApiManager.sendInstalledApps(deviceId, apps)
 
         Result.success()
     }
-}
+    }
