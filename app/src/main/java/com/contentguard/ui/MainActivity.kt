@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.VpnService
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -20,6 +21,7 @@ import androidx.work.WorkManager
 import com.contentguard.R
 import com.contentguard.receiver.AdminReceiver
 import com.contentguard.service.BlockerVpnService
+import com.contentguard.service.ContentGuardAccessibilityService
 import com.contentguard.utils.ApiManager
 import com.contentguard.utils.AppScanner
 import com.contentguard.utils.HeartbeatWorker
@@ -39,6 +41,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvDelayTimer: TextView
     private lateinit var btnToggleVpn: Button
     private lateinit var btnAdminProtection: Button
+    private lateinit var btnAccessibility: Button
     private lateinit var btnCancelRequest: Button
 
     private val vpnPermissionLauncher = registerForActivityResult(
@@ -64,8 +67,6 @@ class MainActivity : AppCompatActivity() {
         setupClickListeners()
         updateUI()
         startHeartbeat()
-
-        // סריקת אפליקציות מיידית בכל פתיחה
         syncAppsNow()
     }
 
@@ -79,6 +80,7 @@ class MainActivity : AppCompatActivity() {
         tvDelayTimer = findViewById(R.id.tvDelayTimer)
         btnToggleVpn = findViewById(R.id.btnToggleVpn)
         btnAdminProtection = findViewById(R.id.btnAdminProtection)
+        btnAccessibility = findViewById(R.id.btnAccessibility)
         btnCancelRequest = findViewById(R.id.btnCancelRequest)
     }
 
@@ -91,6 +93,15 @@ class MainActivity : AppCompatActivity() {
             if (!isAdminActive()) requestAdminPermission()
             else showToast("הגנה כבר מופעלת ✅")
         }
+        btnAccessibility.setOnClickListener {
+            if (!isAccessibilityEnabled()) {
+                // פותח את הגדרות הנגישות
+                startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                showToast("חפש ContentGuard והפעל")
+            } else {
+                showToast("חסימת אפליקציות פעילה ✅")
+            }
+        }
         btnCancelRequest.setOnClickListener {
             prefs.setDisableRequestedTime(0L)
             showToast("בקשת הביטול בוטלה ✅")
@@ -98,9 +109,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * סורק ושולח את רשימת האפליקציות לשרת מיד בפתיחה.
-     */
     private fun syncAppsNow() {
         val deviceId = prefs.getDeviceId() ?: return
         CoroutineScope(Dispatchers.IO).launch {
@@ -114,15 +122,11 @@ class MainActivity : AppCompatActivity() {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
-
         val request = PeriodicWorkRequestBuilder<HeartbeatWorker>(15, TimeUnit.MINUTES)
             .setConstraints(constraints)
             .build()
-
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "heartbeat",
-            ExistingPeriodicWorkPolicy.KEEP,
-            request
+            "heartbeat", ExistingPeriodicWorkPolicy.KEEP, request
         )
     }
 
@@ -156,6 +160,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun isAdminActive() = devicePolicyManager.isAdminActive(adminComponentName)
 
+    private fun isAccessibilityEnabled(): Boolean {
+        val service = "${packageName}/${ContentGuardAccessibilityService::class.java.canonicalName}"
+        val enabled = Settings.Secure.getString(
+            contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ) ?: return false
+        return enabled.contains(service)
+    }
+
     private fun requestAdminPermission() {
         val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
             putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponentName)
@@ -167,18 +180,20 @@ class MainActivity : AppCompatActivity() {
     private fun updateUI() {
         val vpnActive = prefs.isVpnEnabled()
         val adminActive = isAdminActive()
+        val accessibilityActive = isAccessibilityEnabled()
         val pendingRequest = prefs.getDisableRequestedTime() > 0
 
         tvStatus.text = when {
-            vpnActive && adminActive -> "🛡️ הגנה מלאה פעילה"
-            vpnActive -> "⚡ VPN פעיל (ללא הגנת הסרה)"
-            adminActive -> "🔒 הגנת הסרה פעילה (VPN כבוי)"
+            vpnActive && adminActive && accessibilityActive -> "🛡️ הגנה מלאה פעילה"
+            vpnActive && adminActive -> "⚡ VPN + Admin פעיל (ללא חסימת אפליקציות)"
+            vpnActive -> "⚡ VPN פעיל בלבד"
             else -> "⚠️ הגנה לא פעילה"
         }
 
         btnToggleVpn.text = if (vpnActive) "כבה הגנה" else "הפעל הגנה"
         btnAdminProtection.text = if (adminActive) "✅ מוגן מהסרה" else "הפעל הגנת הסרה"
         btnAdminProtection.isEnabled = !adminActive
+        btnAccessibility.text = if (accessibilityActive) "✅ חסימת אפליקציות פעילה" else "הפעל חסימת אפליקציות"
 
         if (pendingRequest) {
             val remaining = prefs.getRemainingDelayMillis()
