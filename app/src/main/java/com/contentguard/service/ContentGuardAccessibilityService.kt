@@ -3,9 +3,10 @@ package com.contentguard.service
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import android.view.accessibility.AccessibilityEvent
 import android.util.Log
-import com.contentguard.ui.BlockedActivity
 import com.contentguard.utils.PrefsManager
 
 class ContentGuardAccessibilityService : AccessibilityService() {
@@ -15,15 +16,18 @@ class ContentGuardAccessibilityService : AccessibilityService() {
     }
 
     private lateinit var prefs: PrefsManager
+    private val handler = Handler(Looper.getMainLooper())
     private var lastBlockedPackage = ""
     private var lastBlockedTime = 0L
+    private var blockRunnable: Runnable? = null
 
     override fun onServiceConnected() {
         prefs = PrefsManager(this)
         serviceInfo = serviceInfo.apply {
-            eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+            eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
+                         AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
             feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
-            notificationTimeout = 100
+            notificationTimeout = 50
         }
         Log.d(TAG, "Accessibility Service מחובר")
     }
@@ -33,45 +37,46 @@ class ContentGuardAccessibilityService : AccessibilityService() {
 
         val packageName = event.packageName?.toString() ?: return
 
-        // לא חוסמים את עצמנו ואת מסך הנעילה
+        // לא חוסמים מערכת ואת עצמנו
         if (packageName == this.packageName) return
         if (packageName == "com.contentguard.debug") return
         if (packageName == "com.android.systemui") return
         if (packageName == "android") return
+        if (packageName == "com.android.launcher3") return
+        if (packageName.contains("launcher")) return
 
-        // מניעת לולאה – לא חוסמים שוב תוך 2 שניות
         val now = System.currentTimeMillis()
-        if (packageName == lastBlockedPackage && now - lastBlockedTime < 2000) return
+        if (packageName == lastBlockedPackage && now - lastBlockedTime < 1000) return
 
         val blockedApps = prefs.getBlockedApps()
         if (blockedApps.contains(packageName)) {
             lastBlockedPackage = packageName
             lastBlockedTime = now
 
-            Log.d(TAG, "חוסם אפליקציה: $packageName")
+            Log.d(TAG, "חוסם: $packageName")
 
-            // מציג את מסך החסימה
-            val intent = Intent(this, BlockedActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                        Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                        Intent.FLAG_ACTIVITY_SINGLE_TOP
-                putExtra("app_name", getAppName(packageName))
-            }
-            startActivity(intent)
+            // חוזר למסך הבית מיד
+            goHome()
+
+            // חוזר שוב אחרי 300ms למקרה שאנדרואיד החזיר לאפליקציה
+            blockRunnable?.let { handler.removeCallbacks(it) }
+            blockRunnable = Runnable { goHome() }
+            handler.postDelayed(blockRunnable!!, 300)
+            handler.postDelayed({ goHome() }, 600)
+            handler.postDelayed({ goHome() }, 1000)
         }
     }
 
-    private fun getAppName(packageName: String): String {
-        return try {
-            val pm = packageManager
-            val info = pm.getApplicationInfo(packageName, 0)
-            pm.getApplicationLabel(info).toString()
-        } catch (e: Exception) {
-            packageName
-        }
+    private fun goHome() {
+        performGlobalAction(GLOBAL_ACTION_HOME)
     }
 
     override fun onInterrupt() {
         Log.d(TAG, "Accessibility Service הופסק")
+    }
+
+    override fun onDestroy() {
+        blockRunnable?.let { handler.removeCallbacks(it) }
+        super.onDestroy()
     }
 }
