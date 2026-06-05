@@ -27,7 +27,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="הגנת רשת אישית"
+            android:text="הגנת תוכן אישית"
             android:textSize="16sp"
             android:textColor="#94A3B8"
             android:gravity="center"
@@ -70,18 +70,6 @@
 
         </LinearLayout>
 
-        <!-- כפתור VPN -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnToggleVpn"
-            android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:text="הפעל הגנה"
-            android:textSize="18sp"
-            android:textColor="#FFFFFF"
-            app:backgroundTint="#2563EB"
-            app:cornerRadius="12dp"
-            android:layout_marginTop="24dp" />
-
         <!-- כפתור Admin -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAdminProtection"
@@ -92,9 +80,9 @@
             android:textColor="#FFFFFF"
             app:backgroundTint="#7C3AED"
             app:cornerRadius="12dp"
-            android:layout_marginTop="12dp" />
+            android:layout_marginTop="24dp" />
 
-        <!-- כפתור Accessibility – חסימת אפליקציות -->
+        <!-- כפתור Accessibility -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAccessibility"
             android:layout_width="match_parent"
@@ -106,7 +94,19 @@
             app:cornerRadius="12dp"
             android:layout_marginTop="12dp" />
 
-        <!-- כפתור ביטול בקשה -->
+        <!-- כפתור DNS -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDns"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="הגדר DNS מסנן"
+            android:textSize="16sp"
+            android:textColor="#FFFFFF"
+            app:backgroundTint="#0284C7"
+            app:cornerRadius="12dp"
+            android:layout_marginTop="12dp" />
+
+        <!-- כפתור ביטול -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCancelRequest"
             android:layout_width="match_parent"
@@ -139,7 +139,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="• VPN מקומי מסנן תעבורת רשת\n• DNS של CleanBrowsing חוסם תוכן\n• הגנת Admin מקשה על הסרה\n• נגישות חוסמת אפליקציות ספציפיות\n• ביטול דורש המתנה של 48 שעות"
+                android:text="• DNS מסנן חוסם אתרים לא רצויים\n• נגישות חוסמת אפליקציות ספציפיות\n• הגנת Admin מקשה על הסרה\n• ביטול דורש המתנה של 48 שעות"
                 android:textSize="13sp"
                 android:textColor="#94A3B8"
                 android:layout_marginTop="8dp"
