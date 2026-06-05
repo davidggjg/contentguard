@@ -15,17 +15,16 @@ class PrefsManager(context: Context) {
         private const val KEY_BLOCKED_APPS = "blocked_apps"
         private const val KEY_BLOCK_LEVEL = "block_level"
         private const val KEY_ACTIVATED = "activated"
+        private const val KEY_IS_LOCKED = "is_locked"
         const val DELAY_MILLIS = 48L * 60 * 60 * 1000
     }
 
     private val prefs: SharedPreferences =
         context.getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
 
-    // VPN
     fun isVpnEnabled() = prefs.getBoolean(KEY_VPN_ENABLED, false)
     fun setVpnEnabled(enabled: Boolean) = prefs.edit().putBoolean(KEY_VPN_ENABLED, enabled).apply()
 
-    // עיכוב הסרה
     fun setDisableRequestedTime(time: Long) = prefs.edit().putLong(KEY_DISABLE_REQUESTED_TIME, time).apply()
     fun getDisableRequestedTime() = prefs.getLong(KEY_DISABLE_REQUESTED_TIME, 0L)
     fun isDelayPassed(): Boolean {
@@ -37,7 +36,6 @@ class PrefsManager(context: Context) {
         return if (t == 0L) DELAY_MILLIS else maxOf(0L, DELAY_MILLIS - (System.currentTimeMillis() - t))
     }
 
-    // חשבון
     fun isActivated() = prefs.getBoolean(KEY_ACTIVATED, false)
     fun setActivated(v: Boolean) = prefs.edit().putBoolean(KEY_ACTIVATED, v).apply()
     fun getDeviceId() = prefs.getString(KEY_DEVICE_ID, null)
@@ -45,7 +43,6 @@ class PrefsManager(context: Context) {
     fun getActivationCode() = prefs.getString(KEY_ACTIVATION_CODE, null)
     fun setActivationCode(code: String) = prefs.edit().putString(KEY_ACTIVATION_CODE, code).apply()
 
-    // הגדרות חסימה – דומיינים
     fun getBlockedDomains(): List<String> {
         val raw = prefs.getString(KEY_BLOCKED_DOMAINS, "") ?: ""
         return if (raw.isEmpty()) emptyList() else raw.split(",")
@@ -53,7 +50,6 @@ class PrefsManager(context: Context) {
     fun setBlockedDomains(domains: List<String>) =
         prefs.edit().putString(KEY_BLOCKED_DOMAINS, domains.joinToString(",")).apply()
 
-    // הגדרות חסימה – אפליקציות
     fun getBlockedApps(): Set<String> {
         val raw = prefs.getString(KEY_BLOCKED_APPS, "") ?: ""
         return if (raw.isEmpty()) emptySet() else raw.split(",").toSet()
@@ -63,4 +59,7 @@ class PrefsManager(context: Context) {
 
     fun getBlockLevel() = prefs.getString(KEY_BLOCK_LEVEL, "medium") ?: "medium"
     fun setBlockLevel(level: String) = prefs.edit().putString(KEY_BLOCK_LEVEL, level).apply()
+
+    fun isLocked() = prefs.getBoolean(KEY_IS_LOCKED, false)
+    fun setIsLocked(locked: Boolean) = prefs.edit().putBoolean(KEY_IS_LOCKED, locked).apply()
 }
