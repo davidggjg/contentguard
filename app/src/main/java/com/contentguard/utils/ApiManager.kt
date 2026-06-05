@@ -16,7 +16,8 @@ object ApiManager {
         val deviceName: String,
         val blockedDomains: List<String>,
         val blockedApps: List<String>,
-        val blockLevel: String
+        val blockLevel: String,
+        val isLocked: Boolean = false
     )
 
     fun activate(activationCode: String): DeviceSettings? {
@@ -52,7 +53,8 @@ object ApiManager {
                     deviceName = "",
                     blockedDomains = jsonArrayToList(json.optJSONArray("blocked_domains")),
                     blockedApps = jsonArrayToList(json.optJSONArray("blocked_apps")),
-                    blockLevel = json.optString("block_level", "medium")
+                    blockLevel = json.optString("block_level", "medium"),
+                    isLocked = json.optBoolean("is_locked", false)
                 )
             } else null
         } catch (e: Exception) {
@@ -61,7 +63,6 @@ object ApiManager {
         }
     }
 
-    // שולח heartbeat לשרת – מסמן שהמכשיר מחובר
     fun sendHeartbeat(deviceId: String) {
         try {
             val url = URL("$BASE_URL/heartbeat")
@@ -71,13 +72,12 @@ object ApiManager {
             conn.doOutput = true
             val body = JSONObject().put("device_id", deviceId).toString()
             conn.outputStream.write(body.toByteArray())
-            conn.responseCode // מפעיל את הבקשה
+            conn.responseCode
         } catch (e: Exception) {
             Log.e(TAG, "שגיאת heartbeat: ${e.message}")
         }
     }
 
-    // שולח רשימת אפליקציות מותקנות לשרת
     fun sendInstalledApps(deviceId: String, apps: List<Pair<String, String>>) {
         try {
             val url = URL("$BASE_URL/apps")
@@ -108,7 +108,8 @@ object ApiManager {
             deviceName = obj.getString("device_name"),
             blockedDomains = jsonArrayToList(settings.optJSONArray("blocked_domains")),
             blockedApps = jsonArrayToList(settings.optJSONArray("blocked_apps")),
-            blockLevel = settings.optString("block_level", "medium")
+            blockLevel = settings.optString("block_level", "medium"),
+            isLocked = obj.optBoolean("is_locked", false)
         )
     }
 
