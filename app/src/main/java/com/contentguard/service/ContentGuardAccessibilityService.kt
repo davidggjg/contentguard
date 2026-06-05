@@ -2,7 +2,6 @@ package com.contentguard.service
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
-import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.view.accessibility.AccessibilityEvent
@@ -19,13 +18,11 @@ class ContentGuardAccessibilityService : AccessibilityService() {
     private val handler = Handler(Looper.getMainLooper())
     private var lastBlockedPackage = ""
     private var lastBlockedTime = 0L
-    private var blockRunnable: Runnable? = null
 
     override fun onServiceConnected() {
         prefs = PrefsManager(this)
         serviceInfo = serviceInfo.apply {
-            eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
-                         AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
+            eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
             feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
             notificationTimeout = 50
         }
@@ -37,13 +34,17 @@ class ContentGuardAccessibilityService : AccessibilityService() {
 
         val packageName = event.packageName?.toString() ?: return
 
-        // לא חוסמים מערכת ואת עצמנו
         if (packageName == this.packageName) return
         if (packageName == "com.contentguard.debug") return
         if (packageName == "com.android.systemui") return
         if (packageName == "android") return
-        if (packageName == "com.android.launcher3") return
         if (packageName.contains("launcher")) return
+
+        // אם המכשיר נעול – חוסם הכל
+        if (prefs.isLocked()) {
+            goHome()
+            return
+        }
 
         val now = System.currentTimeMillis()
         if (packageName == lastBlockedPackage && now - lastBlockedTime < 1000) return
@@ -52,18 +53,10 @@ class ContentGuardAccessibilityService : AccessibilityService() {
         if (blockedApps.contains(packageName)) {
             lastBlockedPackage = packageName
             lastBlockedTime = now
-
             Log.d(TAG, "חוסם: $packageName")
-
-            // חוזר למסך הבית מיד
             goHome()
-
-            // חוזר שוב אחרי 300ms למקרה שאנדרואיד החזיר לאפליקציה
-            blockRunnable?.let { handler.removeCallbacks(it) }
-            blockRunnable = Runnable { goHome() }
-            handler.postDelayed(blockRunnable!!, 300)
-            handler.postDelayed({ goHome() }, 600)
-            handler.postDelayed({ goHome() }, 1000)
+            handler.postDelayed({ goHome() }, 300)
+            handler.postDelayed({ goHome() }, 700)
         }
     }
 
@@ -72,11 +65,6 @@ class ContentGuardAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
-        Log.d(TAG, "Accessibility Service הופסק")
-    }
-
-    override fun onDestroy() {
-        blockRunnable?.let { handler.removeCallbacks(it) }
-        super.onDestroy()
+        Log.d(TAG, "הופסק")
     }
 }
